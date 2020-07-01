@@ -1,0 +1,1417 @@
+set cut_paste_input [stack 0]
+version 9.0 v8
+push $cut_paste_input
+Group {
+ name ZZ_DEFOCUS_
+ tile_color 0x990402ff
+ label "Focal Lenght: \[value F]\nfStop: \[value d]"
+ selected true
+ xpos 594
+ ypos 1017
+ addUserKnob {20 User l "Focus Parms"}
+ addUserKnob {20 step1 l "Step 1 Setup DeNormalization, Sensor Size, Scale Scene :" n 1}
+ addUserKnob {6 InvertDepth +STARTLINE}
+ addUserKnob {7 OffsetInvertDepth l "Offset Invert Depth" -STARTLINE}
+ OffsetInvertDepth 1
+ addUserKnob {7 depthLift l Lift/NearClipPlane}
+ addUserKnob {7 depthGain l Gain/FarClipPlane}
+ depthGain 1
+ addUserKnob {26 ffff l "" +STARTLINE T "if Depth in World Values Set Lift(0) Gain(1)"}
+ addUserKnob {7 SensorHSize l "Sensor Horizontal Size (mm)"}
+ SensorHSize 24.576
+ addUserKnob {7 GlobScale l "Global Scale Scene" R 1 10}
+ GlobScale 7.04
+ addUserKnob {20 endGroup_1 l endGroup n -1}
+ addUserKnob {26 ""}
+ addUserKnob {20 Step2 l "Step 2 Depth Preparing , Extend Depth to Alpha:" n 1}
+ addUserKnob {7 SetDepthtoAlpha l "Set Depth to Alpha" R 1 500}
+ SetDepthtoAlpha 18
+ addUserKnob {7 extend_px l "Exdend Depth to Alpha (px)" R 0 10}
+ extend_px 4.9
+ addUserKnob {6 edge_extend l "Enable Extend" -STARTLINE}
+ edge_extend true
+ addUserKnob {41 size l "Post Blur Depth" T POSTBLUR.size}
+ addUserKnob {6 PreviewDepth l "Preview Depth" +STARTLINE}
+ addUserKnob {6 Ena_preparing l "Enable Preparing" -STARTLINE}
+ Ena_preparing true
+ addUserKnob {20 endGroup_2 l endGroup n -1}
+ addUserKnob {26 ""}
+ addUserKnob {26 f l "Step 3 Lens Settings:"}
+ addUserKnob {22 mkCopy l "Make Reference Copy of ThisNode" T "code = nuke.thisNode()\['code'].getText()\nexec(code)\nMakeReferenceCopy()" +STARTLINE}
+ addUserKnob {22 GetFromCamera l "Get From Selected Camera" -STARTLINE T "code = nuke.thisNode()\['code'].getText()\nexec(code)\nLensParmsFromSelectedCamera()"}
+ addUserKnob {7 F l "Focal Lenght" R 15 135}
+ F {{auto_load_camera.focal}}
+ addUserKnob {7 d l F-Stop R 1.2 22}
+ d 4
+ addUserKnob {41 UserFarMult l "Back Blur Multiply" T PerFocalCocMult.UserFarMult}
+ addUserKnob {41 UserNearMult l "Front Blur Multiply" T PerFocalCocMult.UserNearMult}
+ addUserKnob {26 ff l "Step 4 Focus Settings:"}
+ addUserKnob {6 DepthToAlpha l INVISIBLE +INVISIBLE +STARTLINE}
+ addUserKnob {6 DepthVisualize l "Focus Visualize(rgb)" -STARTLINE}
+ DepthVisualize true
+ addUserKnob {6 DisableDefocus l "Disable Defocus" -STARTLINE}
+ addUserKnob {6 DraftMode l INVISIBLE -STARTLINE +INVISIBLE}
+ DraftMode true
+ addUserKnob {19 FD l "Focus Distance (inAlpha)" R 1 50}
+ FD {1 0 0 2.586186647}
+ addUserKnob {6 FD_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {20 endGroup n -1}
+ addUserKnob {20 BOKEH l Bokeh}
+ addUserKnob {41 max_size l maximum T ZBlur2.max_size}
+ addUserKnob {26 dfdf l BloomType:}
+ addUserKnob {41 in_colorspace l in T OCIOColorSpace1.in_colorspace}
+ addUserKnob {41 out_colorspace l out T OCIOColorSpace2.out_colorspace}
+ addUserKnob {26 ""}
+ addUserKnob {7 Anamorphic l "Anamorphic Factor" R 1 2}
+ Anamorphic 1.15
+ addUserKnob {6 Astigmatism l "Astigmatism (slow)" +STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {6 post2dDefocus l "Post 2d Defocus on Edges" +STARTLINE}
+ addUserKnob {41 defocus T Defocus1.defocus}
+ addUserKnob {26 ""}
+ addUserKnob {43 code l INVISIBLE +INVISIBLE}
+ code "from __future__ import with_statement\n\ndef MakeReferenceCopy():\n   dofnode = nuke.thisNode()\n   with nuke.root():\n      nuke.selectAll()\n      nuke.invertSelection()\n      dofnode.setSelected(1)\n      nuke.nodeCopy(\"%clipboard%\")\n      dofnode.setSelected(0)\n      dofcopy = nuke.nodePaste(\"%clipboard%\")\n      listparms = \['depthLift','DisableDefocus','depthGain', 'SensorHSize', 'GlobScale', 'F', 'd', 'DepthToAlpha', 'DepthVisualize', 'FD', 'max_size', 'Anamorphic', 'UserFarMult',  'UserNearMult', 'Astigmatism']\n      dofcopy\['tile_color'].setValue(int('%02x%02x%02x%02x' % (0.373*255,0.675*255,0.392*255,1),16))\n      for parm in listparms:\n         dofcopy\[parm].setExpression(dofnode.name() + '.' + parm)\n\ndef LensParmsFromSelectedCamera():\n    dofnode = nuke.thisNode()\n    with nuke.root():\n        cam = nuke.selectedNodes()\n        if len(cam) != 1:\n            nuke.message('Please select a single camera node.')\n            return\n        elif len(cam) == 0:\n            nuke.message('Please select a single camera node.')\n            return\n        else:\n            cam = cam\[0]\n        if 'Camera2' not in cam.Class():\n            nuke.message('Please select a camera node.')\n            return\n        dofnode\['F'].setValue(cam\['focal'].getValue())\n        dofnode\['d'].setValue(cam\['fstop'].getValue())\n        dofnode\['SensorHSize'].setValue(cam\['haperture'].getValue())\n\n"
+}
+ Constant {
+  inputs 0
+  channels depth
+  color 1
+  name Constant1
+  xpos -78
+  ypos -1160
+ }
+ Input {
+  inputs 0
+  name rgba_z
+  xpos 8
+  ypos -1363
+ }
+set N97eb610 [stack 0]
+ Merge2 {
+  inputs 2
+  operation minus
+  Achannels depth
+  Bchannels depth
+  output depth
+  name Merge1
+  xpos 66
+  ypos -1136
+ }
+ Add {
+  channels depth
+  value {{OffsetInvertDepth}}
+  name Add1
+  xpos 66
+  ypos -1088
+ }
+push $N97eb610
+ Switch {
+  inputs 2
+  which {{InvertDepth}}
+  name use_invertDepth
+  label "\[value which]"
+  xpos 8
+  ypos -1031
+ }
+ Grade {
+  channels depth
+  black {{depthLift}}
+  white {{depthGain}}
+  black_clamp false
+  name DepthPrePareRenderClipPlanes
+  xpos 8
+  ypos -931
+  addUserKnob {20 Utilities}
+  addUserKnob {22 grade_channels_alpha l "                       channels alpha                       " T "import node_function;nf=node_function.GradeNodeFunction(\"node\");nf.channels_alpha()" +STARTLINE}
+  addUserKnob {22 grade_maskChannel_alpha l "                     maskChannel alpha                      " T "import node_function;nf=node_function.GradeNodeFunction(\"node\");nf.maskChannel_alpha()" +STARTLINE}
+  addUserKnob {22 ps_to_nuke_correct l "                     ps_to_nuke_correct                     " T "import node_function;nf=node_function.GradeNodeFunction(\"node\");nf.ps_to_nuke_correct()" +STARTLINE}
+ }
+ Dot {
+  name Dot2
+  label "Prepareing\nSETEXPENDTOALPHA\nSETDEPTHTOALPHA\nSETPOSBLURDEPTH"
+  xpos 37
+  ypos -866
+ }
+set N9824f90 [stack 0]
+ Dot {
+  name Dot16
+  label "\[value \[input \[in] 0].name]"
+  xpos -294
+  ypos -902
+ }
+set N98299b0 [stack 0]
+ Dot {
+  name Dot15
+  label "\[value \[input \[in] 0].name]"
+  xpos -390
+  ypos -902
+ }
+set N982e520 [stack 0]
+ Gamma {
+  channels alpha
+  value 0
+  name Gamma1
+  xpos -671
+  ypos -770
+ }
+set N9833800 [stack 0]
+push $N9833800
+push $N982e520
+ Shuffle {
+  in depth
+  out alpha
+  name Shuffle8
+  label "\[value in]"
+  xpos -445
+  ypos -770
+  addUserKnob {20 Utilities}
+  addUserKnob {22 shaffle_plus_channel l "                    shaffle plus channel                    " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.plus_channel()" +STARTLINE}
+  addUserKnob {22 shuffle_all_color l "                   shuffle all color: RED                   " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.all_color(\"red\")" +STARTLINE}
+ }
+ Multiply {
+  inputs 1+1
+  channels alpha
+  value 0
+  invert_mask true
+  name Multiply1
+  xpos -445
+  ypos -699
+ }
+ FilterErode {
+  inputs 1+1
+  channels alpha
+  size {{-extend_px}}
+  invert_mask true
+  name FilterErode2
+  xpos -445
+  ypos -605
+ }
+set N985a260 [stack 0]
+ Expression {
+  expr3 "a <0.001 ? 1 : 0"
+  name Expression1
+  xpos -671
+  ypos -563
+ }
+ Constant {
+  inputs 0
+  channels alpha
+  color {{SetDepthtoAlpha}}
+  name DEPTH_TO_ALPHA1
+  xpos -767
+  ypos -474
+ }
+push $N985a260
+ Merge2 {
+  inputs 2+1
+  operation copy
+  name Merge4
+  xpos -445
+  ypos -471
+ }
+ Blur {
+  channels alpha
+  size 10
+  quality 5
+  name POSTBLUR
+  xpos -445
+  ypos -420
+ }
+push $N98299b0
+ ShuffleCopy {
+  inputs 2
+  in alpha
+  red red
+  alpha alpha2
+  out depth
+  name ShuffleCopy1
+  label "\[value in] to \[value out]"
+  xpos -308
+  ypos -432
+ }
+push $N9824f90
+ Switch {
+  inputs 2
+  which {{Ena_preparing}}
+  name Enb_preparing
+  label "\[value which]"
+  xpos 8
+  ypos -432
+ }
+ Multiply {
+  channels depth
+  value {{1/GlobScale}}
+  name Global_scale
+  xpos 8
+  ypos -304
+ }
+ Dot {
+  name Dot1
+  label "\[value \[input \[in] 0].name]"
+  xpos 188
+  ypos -62
+ }
+set N98bbe60 [stack 0]
+ Shuffle {
+  in depth
+  in2 alpha
+  alpha red2
+  name Shuffle1
+  label "\[value in]"
+  xpos -712
+  ypos -48
+  addUserKnob {20 Utilities}
+  addUserKnob {22 shaffle_plus_channel l "                    shaffle plus channel                    " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.plus_channel()" +STARTLINE}
+  addUserKnob {22 shuffle_all_color l "                   shuffle all color: RED                   " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.all_color(\"red\")" +STARTLINE}
+ }
+set N98c0920 [stack 0]
+ Expression {
+  temp_name0 coc
+  temp_expr0 ((F)/d)*(abs(r-FD.a)/r)/(FD.a*0.5)
+  temp_name1 perFL
+  temp_expr1 "r<FD.a ? coc*PerFocalCocMult.NearMult(F)*PerFocalCocMult.UserNearMult : coc*PerFocalCocMult.FarMult(F)*PerFocalCocMult.UserFarMult"
+  temp_name2 test
+  temp_expr2 PerFocalCocMult.FarMult(F)
+  temp_name3 coc_px
+  temp_expr3 (perFL/(SensorHSize/29))*(input.width/2100)
+  expr0 coc_px
+  expr1 "r<FD.a ? coc_px : -coc_px"
+  expr2 "r<FD.a ? 0 : coc_px"
+  channel3 alpha
+  expr3 "(r-0.05>FD.a ? 0 : 1)*(r+0.05<FD.a ? 0 : 1)"
+  name GenerateCOC
+  xpos -712
+  ypos 37
+  addUserKnob {20 User}
+  addUserKnob {7 m}
+  m {{"F/(FD.a - F)"}}
+ }
+ Crop {
+  box {0 0 {input.width} {input.height}}
+  crop false
+  name Crop2
+  xpos -712
+  ypos 71
+ }
+set N98de880 [stack 0]
+ Dot {
+  name Dot7
+  label "\[value \[input \[in] 0].name]"
+  xpos -678
+  ypos 634
+ }
+ Dot {
+  name Dot4
+  label "\[value \[input \[in] 0].name]"
+  xpos -678
+  ypos 890
+ }
+set N98eda20 [stack 0]
+ EdgeDetectWrapper {
+  channels alpha
+  name EdgeDetect1
+  xpos -712
+  ypos 992
+ }
+set N98f2ca0 [stack 0]
+push $N98eda20
+ Merge2 {
+  inputs 2
+  operation plus
+  name InFocusMask
+  xpos -600
+  ypos 934
+ }
+ NoOp {
+  inputs 0
+  name PerFocalCocMult
+  xpos -840
+  ypos 38
+  addUserKnob {20 User l FrameIsFocal}
+  addUserKnob {7 UserFarMult}
+  UserFarMult 1
+  addUserKnob {7 UserNearMult}
+  UserNearMult 1
+  addUserKnob {7 NearMult}
+  NearMult {{curve x1 0.01150602102 x15 0.3072467446 x18 0.3543855548 x20 0.3838162124 x25 0.4783864915 x28 0.5334072113 x35 0.6384219527 x50 0.8828336 x85 1.478987575 x100 1.836158872 x135 2.546841145 x199 3.723744392}}
+  addUserKnob {7 FarMult}
+  FarMult {{curve x1 0.009013175964 x15 0.3340441585 x18 0.3984389901 0.4379796684 x25 0.4989852905 x28 0.558861196 x35 0.6941159964 x50 0.9450699091 x85 1.50853312 x100 1.701230764 x135 2.377635717 x200 3.539715052}}
+ }
+push $N98bbe60
+ Shuffle {
+  in depth
+  in2 rgba
+  alpha alpha2
+  name Shuffle5
+  label "\[value in]"
+  xpos 160
+  ypos 1376
+  addUserKnob {20 Utilities}
+  addUserKnob {22 shaffle_plus_channel l "                    shaffle plus channel                    " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.plus_channel()" +STARTLINE}
+  addUserKnob {22 shuffle_all_color l "                   shuffle all color: RED                   " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.all_color(\"red\")" +STARTLINE}
+ }
+ Multiply {
+  channels rgb
+  value 0.001
+  name Multiply3
+  xpos 160
+  ypos 1430
+ }
+push $N98c0920
+ Dot {
+  name Dot18
+  label "\[value \[input \[in] 0].name]"
+  xpos -988
+  ypos -44
+ }
+ Dot {
+  name Dot19
+  label "\[value \[input \[in] 0].name]"
+  xpos -988
+  ypos 1268
+ }
+push $N98bbe60
+ Shuffle {
+  in depth
+  out alpha
+  name PickingEnable
+  label "\[value in]"
+  xpos 8
+  ypos 112
+  addUserKnob {20 Utilities}
+  addUserKnob {22 shaffle_plus_channel l "                    shaffle plus channel                    " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.plus_channel()" +STARTLINE}
+  addUserKnob {22 shuffle_all_color l "                   shuffle all color: RED                   " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.all_color(\"red\")" +STARTLINE}
+ }
+ Dot {
+  name Dot11
+  label "\[value \[input \[in] 0].name]"
+  xpos 42
+  ypos 1156
+ }
+set N994c200 [stack 0]
+ Dot {
+  name Dot3
+  label "\[value \[input \[in] 0].name]"
+  xpos 42
+  ypos 1284
+ }
+push $N98eda20
+ Dot {
+  name Dot10
+  label "\[value \[input \[in] 0].name]"
+  xpos -774
+  ypos 890
+ }
+ Dot {
+  name Dot8
+  label "\[value \[input \[in] 0].name]"
+  xpos -774
+  ypos 1114
+ }
+ Dot {
+  name Dot9
+  label "\[value \[input \[in] 0].name]"
+  xpos -342
+  ypos 1114
+ }
+ Shuffle {
+  red alpha
+  name Shuffle2
+  label "\[value in]"
+  xpos -376
+  ypos 1168
+  addUserKnob {20 Utilities}
+  addUserKnob {22 shaffle_plus_channel l "                    shaffle plus channel                    " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.plus_channel()" +STARTLINE}
+  addUserKnob {22 shuffle_all_color l "                   shuffle all color: RED                   " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.all_color(\"red\")" +STARTLINE}
+ }
+ Multiply {
+  channels {-rgba.red rgba.green rgba.blue none}
+  value 0.01
+  name Multiply2
+  xpos -376
+  ypos 1206
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy2
+  xpos -376
+  ypos 1232
+ }
+ Multiply {
+  inputs 1+1
+  channels rgba
+  value 0
+  invert_mask true
+  name Multiply5
+  xpos -376
+  ypos 1270
+ }
+push $N994c200
+push $N98f2ca0
+push $N98eda20
+ Shuffle {
+  alpha red
+  name Shuffle9
+  label "\[value in]"
+  xpos -472
+  ypos 784
+  addUserKnob {20 Utilities}
+  addUserKnob {22 shaffle_plus_channel l "                    shaffle plus channel                    " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.plus_channel()" +STARTLINE}
+  addUserKnob {22 shuffle_all_color l "                   shuffle all color: RED                   " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.all_color(\"red\")" +STARTLINE}
+ }
+ Gamma {
+  channels alpha
+  value 0.2
+  name Gamma4
+  xpos -472
+  ypos 832
+ }
+ Blur {
+  size 4
+  quality 5
+  name Blur1
+  xpos -472
+  ypos 880
+ }
+push $N98bbe60
+ Remove {
+  operation keep
+  channels rgba
+  name Remove1
+  xpos -328
+  ypos 118
+ }
+ Crop {
+  box {0 0 {input.width} {input.height}}
+  crop false
+  name Crop1
+  xpos -328
+  ypos 152
+ }
+set N99c85d0 [stack 0]
+ Dot {
+  name Dot13
+  label "\[value \[input \[in] 0].name]"
+  xpos -172
+  ypos 148
+ }
+ Dot {
+  name Dot14
+  label "\[value \[input \[in] 0].name]"
+  xpos -172
+  ypos 884
+ }
+push $N98de880
+ Expression {
+  expr3 1-abs(sin(pi*(x)/width))
+  name Expression3
+  xpos -634
+  ypos 214
+ }
+push $N98de880
+ Multiply {
+  inputs 1+1
+  channels {rgba.red -rgba.green -rgba.blue none}
+  value 1.25
+  name Multiply6
+  xpos -538
+  ypos 214
+  disable {{1-Astigmatism}}
+ }
+ LensDistortion {
+  serializeKnob ""
+  serialiseKnob "22 serialization::archive 9 0 0 0 0 0 0 0 0 0 0 0 0"
+  distortion1 0.075
+  filter Impulse
+  cardScale {1.088933229 1.088933229 1}
+  a -0.04625016451
+  b -0.02669302933
+  c -0.01010931656
+  name LensDistortion1
+  xpos -456
+  ypos 278
+  disable {{1-Astigmatism}}
+ }
+ Crop {
+  box {0 0 {input.width} {input.height}}
+  crop false
+  name Crop3
+  xpos -456
+  ypos 326
+ }
+push $N99c85d0
+ Gamma {
+  channels rgba
+  value 3
+  name Gamma2
+  xpos -312
+  ypos 214
+ }
+ LensDistortion {
+  serializeKnob ""
+  serialiseKnob "22 serialization::archive 9 0 0 0 0 0 0 0 0 0 0 0 0"
+  distortion1 0.075
+  cardScale {1.088933229 1.088933229 1}
+  a -0.04625016451
+  b -0.02669302933
+  c -0.01010931656
+  name LensDistortion3
+  xpos -312
+  ypos 246
+  disable {{1-Astigmatism}}
+ }
+ Dot {
+  name Dot20
+  label "\[value \[input \[in] 0].name]"
+  xpos -284
+  ypos 292
+ }
+ ShuffleCopy {
+  inputs 2
+  red red
+  green green
+  blue blue
+  alpha black
+  out depth
+  name ShuffleCopy3
+  label "\[value in] to \[value out]"
+  xpos -312
+  ypos 384
+ }
+ OCIOColorSpace {
+  in_colorspace linear
+  out_colorspace linear
+  name OCIOColorSpace1
+  selected true
+  xpos -312
+  ypos 467
+ }
+ ZBlur {
+  channels rgba
+  math linear
+  size {{1/Anamorphic} {((1+Anamorphic)/2)}}
+  max_size 30
+  shape 1
+  name ZBlur2
+  xpos -312
+  ypos 537
+ }
+ OCIOColorSpace {
+  in_colorspace linear
+  out_colorspace linear
+  name OCIOColorSpace2
+  xpos -312
+  ypos 616
+ }
+ LensDistortion {
+  serializeKnob ""
+  serialiseKnob "22 serialization::archive 9 0 0 0 0 0 0 0 0 0 0 0 0"
+  distortion1 {{LensDistortion1.distortion1}}
+  invertDistortion true
+  cardScale {0.9302325249 0.9302325249 1}
+  a 0.00833672937
+  b 0.04452196136
+  c 0.02401318401
+  name LensDistortion2
+  xpos -312
+  ypos 694
+  disable {{1-Astigmatism}}
+ }
+ Gamma {
+  channels rgba
+  value {{1/Gamma2.value}}
+  name Gamma3
+  xpos -312
+  ypos 790
+ }
+ Merge2 {
+  inputs 2+1
+  operation copy
+  output {rgba.red rgba.green rgba.blue -rgba.alpha}
+  invert_mask true
+  name FocusZone
+  xpos -312
+  ypos 886
+ }
+ Defocus {
+  inputs 1+1
+  channels rgba
+  defocus 0
+  quality 5
+  name Defocus1
+  xpos -280
+  ypos 992
+  disable {{1-post2dDefocus}}
+ }
+set N9a59f00 [stack 0]
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy1
+  xpos -184
+  ypos 1040
+ }
+push $N9a59f00
+ Switch {
+  inputs 2
+  which {{DepthToAlpha}}
+  name Switch1
+  label "Depth To Alpha"
+  xpos -280
+  ypos 1088
+ }
+ Switch {
+  inputs 2
+  which {{DepthVisualize}}
+  name ViewAreas
+  label "RGB "
+  xpos -280
+  ypos 1328
+ }
+ Switch {
+  inputs 2
+  which {{PreviewDepth}}
+  name ViewDepth
+  label "\[value which]"
+  xpos -280
+  ypos 1424
+ }
+push $N97eb610
+ Dot {
+  name Dot5
+  label "\[value \[input \[in] 0].name]"
+  xpos 512
+  ypos -1257
+ }
+ Dot {
+  name Dot6
+  label "\[value \[input \[in] 0].name]"
+  xpos 484
+  ypos 1684
+ }
+ Switch {
+  inputs 2
+  which {{1-DisableDefocus}}
+  name disable
+  label "\[value which]"
+  xpos -245
+  ypos 1680
+ }
+ Output {
+  name Output1
+  xpos -245
+  ypos 1837
+ }
+end_group
+push $cut_paste_input
+Group {
+ name ZZ_DEFOCUS_1
+ tile_color 0x5fac6301
+ label "Focal Lenght: \[value F]\nfStop: \[value d]"
+ selected true
+ xpos 356
+ ypos 1024
+ addUserKnob {20 User l "Focus Parms"}
+ addUserKnob {20 step1 l "Step 1 Setup DeNormalization, Sensor Size, Scale Scene :" n 1}
+ addUserKnob {6 InvertDepth +STARTLINE}
+ addUserKnob {7 OffsetInvertDepth l "Offset Invert Depth" -STARTLINE}
+ OffsetInvertDepth 1
+ addUserKnob {7 depthLift l Lift/NearClipPlane}
+ depthLift {{ZZ_DEFOCUS_.depthLift}}
+ addUserKnob {7 depthGain l Gain/FarClipPlane}
+ depthGain {{ZZ_DEFOCUS_.depthGain}}
+ addUserKnob {26 ffff l "" +STARTLINE T "if Depth in World Values Set Lift(0) Gain(1)"}
+ addUserKnob {7 SensorHSize l "Sensor Horizontal Size (mm)"}
+ SensorHSize {{ZZ_DEFOCUS_.SensorHSize}}
+ addUserKnob {7 GlobScale l "Global Scale Scene" R 1 10}
+ GlobScale {{ZZ_DEFOCUS_.GlobScale}}
+ addUserKnob {20 endGroup_1 l endGroup n -1}
+ addUserKnob {26 ""}
+ addUserKnob {20 Step2 l "Step 2 Depth Preparing , Extend Depth to Alpha:" n 1}
+ addUserKnob {7 SetDepthtoAlpha l "Set Depth to Alpha" R 1 500}
+ SetDepthtoAlpha 100
+ addUserKnob {7 extend_px l "Exdend Depth to Alpha (px)" R 0 10}
+ extend_px 4.9
+ addUserKnob {6 edge_extend l "Enable Extend" -STARTLINE}
+ edge_extend true
+ addUserKnob {41 size l "Post Blur Depth" T POSTBLUR.size}
+ addUserKnob {6 PreviewDepth l "Preview Depth" +STARTLINE}
+ addUserKnob {6 Ena_preparing l "Enable Preparing" -STARTLINE}
+ Ena_preparing true
+ addUserKnob {20 endGroup_2 l endGroup n -1}
+ addUserKnob {26 ""}
+ addUserKnob {26 f l "Step 3 Lens Settings:"}
+ addUserKnob {22 mkCopy l "Make Reference Copy of ThisNode" T "code = nuke.thisNode()\['code'].getText()\nexec(code)\nMakeReferenceCopy()" +STARTLINE}
+ addUserKnob {22 GetFromCamera l "Get From Selected Camera" -STARTLINE T "code = nuke.thisNode()\['code'].getText()\nexec(code)\nLensParmsFromSelectedCamera()"}
+ addUserKnob {7 F l "Focal Lenght" R 15 135}
+ F {{ZZ_DEFOCUS_.F}}
+ addUserKnob {7 d l F-Stop R 1.2 22}
+ d {{ZZ_DEFOCUS_.d}}
+ addUserKnob {41 UserFarMult l "Back Blur Multiply" T PerFocalCocMult.UserFarMult}
+ addUserKnob {41 UserNearMult l "Front Blur Multiply" T PerFocalCocMult.UserNearMult}
+ addUserKnob {26 ff l "Step 4 Focus Settings:"}
+ addUserKnob {6 DepthToAlpha l INVISIBLE +INVISIBLE +STARTLINE}
+ DepthToAlpha {{ZZ_DEFOCUS_.DepthToAlpha}}
+ addUserKnob {6 DepthVisualize l "Focus Visualize(rgb)" -STARTLINE}
+ DepthVisualize {{ZZ_DEFOCUS_.DepthVisualize}}
+ addUserKnob {6 DisableDefocus l "Disable Defocus" -STARTLINE}
+ DisableDefocus {{ZZ_DEFOCUS_.DisableDefocus}}
+ addUserKnob {6 DraftMode l INVISIBLE -STARTLINE +INVISIBLE}
+ DraftMode true
+ addUserKnob {19 FD l "Focus Distance (inAlpha)" R 1 50}
+ FD {{ZZ_DEFOCUS_.FD} {ZZ_DEFOCUS_.FD} {ZZ_DEFOCUS_.FD} {ZZ_DEFOCUS_.FD}}
+ addUserKnob {6 FD_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {20 endGroup n -1}
+ addUserKnob {20 BOKEH l Bokeh}
+ addUserKnob {41 max_size l maximum T ZBlur2.max_size}
+ addUserKnob {26 dfdf l BloomType:}
+ addUserKnob {41 in_colorspace l in T OCIOColorSpace1.in_colorspace}
+ addUserKnob {41 out_colorspace l out T OCIOColorSpace2.out_colorspace}
+ addUserKnob {26 ""}
+ addUserKnob {7 Anamorphic l "Anamorphic Factor" R 1 2}
+ Anamorphic {{ZZ_DEFOCUS_.Anamorphic}}
+ addUserKnob {6 Astigmatism l "Astigmatism (slow)" +STARTLINE}
+ Astigmatism {{ZZ_DEFOCUS_.Astigmatism}}
+ addUserKnob {26 ""}
+ addUserKnob {6 post2dDefocus l "Post 2d Defocus on Edges" +STARTLINE}
+ addUserKnob {41 defocus T Defocus1.defocus}
+ addUserKnob {26 ""}
+ addUserKnob {43 code l INVISIBLE +INVISIBLE}
+ code "from __future__ import with_statement\n\ndef MakeReferenceCopy():\n   dofnode = nuke.thisNode()\n   with nuke.root():\n      nuke.selectAll()\n      nuke.invertSelection()\n      dofnode.setSelected(1)\n      nuke.nodeCopy(\"%clipboard%\")\n      dofnode.setSelected(0)\n      dofcopy = nuke.nodePaste(\"%clipboard%\")\n      listparms = \['depthLift','DisableDefocus','depthGain', 'SensorHSize', 'GlobScale', 'F', 'd', 'DepthToAlpha', 'DepthVisualize', 'FD', 'max_size', 'Anamorphic', 'UserFarMult',  'UserNearMult', 'Astigmatism']\n      dofcopy\['tile_color'].setValue(int('%02x%02x%02x%02x' % (0.373*255,0.675*255,0.392*255,1),16))\n      for parm in listparms:\n         dofcopy\[parm].setExpression(dofnode.name() + '.' + parm)\n\ndef LensParmsFromSelectedCamera():\n    dofnode = nuke.thisNode()\n    with nuke.root():\n        cam = nuke.selectedNodes()\n        if len(cam) != 1:\n            nuke.message('Please select a single camera node.')\n            return\n        elif len(cam) == 0:\n            nuke.message('Please select a single camera node.')\n            return\n        else:\n            cam = cam\[0]\n        if 'Camera2' not in cam.Class():\n            nuke.message('Please select a camera node.')\n            return\n        dofnode\['F'].setValue(cam\['focal'].getValue())\n        dofnode\['d'].setValue(cam\['fstop'].getValue())\n        dofnode\['SensorHSize'].setValue(cam\['haperture'].getValue())\n\n"
+}
+ Constant {
+  inputs 0
+  channels depth
+  color 1
+  name Constant1
+  xpos -78
+  ypos -1160
+ }
+ Input {
+  inputs 0
+  name rgba_z
+  xpos 8
+  ypos -1363
+ }
+set N9b42f00 [stack 0]
+ Merge2 {
+  inputs 2
+  operation minus
+  Achannels depth
+  Bchannels depth
+  output depth
+  name Merge1
+  xpos 66
+  ypos -1136
+ }
+ Add {
+  channels depth
+  value {{OffsetInvertDepth}}
+  name Add1
+  xpos 66
+  ypos -1088
+ }
+push $N9b42f00
+ Switch {
+  inputs 2
+  which {{InvertDepth}}
+  name use_invertDepth
+  label "\[value which]"
+  xpos 8
+  ypos -1031
+ }
+ Grade {
+  channels depth
+  black {{depthLift}}
+  white {{depthGain}}
+  black_clamp false
+  name DepthPrePareRenderClipPlanes
+  xpos 8
+  ypos -931
+  addUserKnob {20 Utilities}
+  addUserKnob {22 grade_channels_alpha l "                       channels alpha                       " T "import node_function;nf=node_function.GradeNodeFunction(\"node\");nf.channels_alpha()" +STARTLINE}
+  addUserKnob {22 grade_maskChannel_alpha l "                     maskChannel alpha                      " T "import node_function;nf=node_function.GradeNodeFunction(\"node\");nf.maskChannel_alpha()" +STARTLINE}
+  addUserKnob {22 ps_to_nuke_correct l "                     ps_to_nuke_correct                     " T "import node_function;nf=node_function.GradeNodeFunction(\"node\");nf.ps_to_nuke_correct()" +STARTLINE}
+ }
+ Dot {
+  name Dot2
+  label "Prepareing\nSETEXPENDTOALPHA\nSETDEPTHTOALPHA\nSETPOSBLURDEPTH"
+  xpos 37
+  ypos -866
+ }
+set N9b7c880 [stack 0]
+ Dot {
+  name Dot16
+  label "\[value \[input \[in] 0].name]"
+  xpos -294
+  ypos -902
+ }
+set N9b81340 [stack 0]
+ Dot {
+  name Dot15
+  label "\[value \[input \[in] 0].name]"
+  xpos -390
+  ypos -902
+ }
+set N9b85d80 [stack 0]
+ Gamma {
+  channels alpha
+  value 0
+  name Gamma1
+  xpos -671
+  ypos -770
+ }
+set N9b8a980 [stack 0]
+push $N9b8a980
+push $N9b85d80
+ Shuffle {
+  in depth
+  out alpha
+  name Shuffle8
+  label "\[value in]"
+  xpos -445
+  ypos -770
+  addUserKnob {20 Utilities}
+  addUserKnob {22 shaffle_plus_channel l "                    shaffle plus channel                    " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.plus_channel()" +STARTLINE}
+  addUserKnob {22 shuffle_all_color l "                   shuffle all color: RED                   " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.all_color(\"red\")" +STARTLINE}
+ }
+ Multiply {
+  inputs 1+1
+  channels alpha
+  value 0
+  invert_mask true
+  name Multiply1
+  xpos -445
+  ypos -699
+ }
+ FilterErode {
+  inputs 1+1
+  channels alpha
+  size {{-extend_px}}
+  invert_mask true
+  name FilterErode2
+  xpos -445
+  ypos -605
+ }
+set N9bb11b0 [stack 0]
+ Expression {
+  expr3 "a <0.001 ? 1 : 0"
+  name Expression1
+  xpos -671
+  ypos -563
+ }
+ Constant {
+  inputs 0
+  channels alpha
+  color {{SetDepthtoAlpha}}
+  name DEPTH_TO_ALPHA1
+  xpos -767
+  ypos -474
+ }
+push $N9bb11b0
+ Merge2 {
+  inputs 2+1
+  operation copy
+  name Merge4
+  xpos -445
+  ypos -471
+ }
+ Blur {
+  channels alpha
+  size 10
+  quality 5
+  name POSTBLUR
+  xpos -445
+  ypos -420
+ }
+push $N9b81340
+ ShuffleCopy {
+  inputs 2
+  in alpha
+  red red
+  alpha alpha2
+  out depth
+  name ShuffleCopy1
+  label "\[value in] to \[value out]"
+  xpos -308
+  ypos -432
+ }
+push $N9b7c880
+ Switch {
+  inputs 2
+  which {{Ena_preparing}}
+  name Enb_preparing
+  label "\[value which]"
+  xpos 8
+  ypos -432
+ }
+ Multiply {
+  channels depth
+  value {{1/GlobScale}}
+  name Global_scale
+  xpos 8
+  ypos -304
+ }
+ Dot {
+  name Dot1
+  label "\[value \[input \[in] 0].name]"
+  xpos 188
+  ypos -62
+ }
+set N9c12d90 [stack 0]
+ Shuffle {
+  in depth
+  in2 alpha
+  alpha red2
+  name Shuffle1
+  label "\[value in]"
+  xpos -712
+  ypos -48
+  addUserKnob {20 Utilities}
+  addUserKnob {22 shaffle_plus_channel l "                    shaffle plus channel                    " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.plus_channel()" +STARTLINE}
+  addUserKnob {22 shuffle_all_color l "                   shuffle all color: RED                   " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.all_color(\"red\")" +STARTLINE}
+ }
+set N9c17850 [stack 0]
+ Expression {
+  temp_name0 coc
+  temp_expr0 ((F)/d)*(abs(r-FD.a)/r)/(FD.a*0.5)
+  temp_name1 perFL
+  temp_expr1 "r<FD.a ? coc*PerFocalCocMult.NearMult(F)*PerFocalCocMult.UserNearMult : coc*PerFocalCocMult.FarMult(F)*PerFocalCocMult.UserFarMult"
+  temp_name2 test
+  temp_expr2 PerFocalCocMult.FarMult(F)
+  temp_name3 coc_px
+  temp_expr3 (perFL/(SensorHSize/29))*(input.width/2100)
+  expr0 coc_px
+  expr1 "r<FD.a ? coc_px : -coc_px"
+  expr2 "r<FD.a ? 0 : coc_px"
+  channel3 alpha
+  expr3 "(r-0.05>FD.a ? 0 : 1)*(r+0.05<FD.a ? 0 : 1)"
+  name GenerateCOC
+  xpos -712
+  ypos 37
+  addUserKnob {20 User}
+  addUserKnob {7 m}
+  m {{"F/(FD.a - F)"}}
+ }
+ Crop {
+  box {0 0 {input.width} {input.height}}
+  crop false
+  name Crop2
+  xpos -712
+  ypos 71
+ }
+set N9c35790 [stack 0]
+ Dot {
+  name Dot7
+  label "\[value \[input \[in] 0].name]"
+  xpos -678
+  ypos 634
+ }
+ Dot {
+  name Dot4
+  label "\[value \[input \[in] 0].name]"
+  xpos -678
+  ypos 890
+ }
+set N9c44930 [stack 0]
+ EdgeDetectWrapper {
+  channels alpha
+  name EdgeDetect1
+  xpos -712
+  ypos 992
+ }
+set N9c4b400 [stack 0]
+push $N9c44930
+ Merge2 {
+  inputs 2
+  operation plus
+  name InFocusMask
+  xpos -600
+  ypos 934
+ }
+ NoOp {
+  inputs 0
+  name PerFocalCocMult
+  xpos -840
+  ypos 38
+  addUserKnob {20 User l FrameIsFocal}
+  addUserKnob {7 UserFarMult}
+  UserFarMult {{ZZ_DEFOCUS_.UserFarMult}}
+  addUserKnob {7 UserNearMult}
+  UserNearMult {{ZZ_DEFOCUS_.UserNearMult}}
+  addUserKnob {7 NearMult}
+  NearMult {{curve x1 0.01150602102 x15 0.3072467446 x18 0.3543855548 x20 0.3838162124 x25 0.4783864915 x28 0.5334072113 x35 0.6384219527 x50 0.8828336 x85 1.478987575 x100 1.836158872 x135 2.546841145 x199 3.723744392}}
+  addUserKnob {7 FarMult}
+  FarMult {{curve x1 0.009013175964 x15 0.3340441585 x18 0.3984389901 0.4379796684 x25 0.4989852905 x28 0.558861196 x35 0.6941159964 x50 0.9450699091 x85 1.50853312 x100 1.701230764 x135 2.377635717 x200 3.539715052}}
+ }
+push $N9c12d90
+ Shuffle {
+  in depth
+  in2 rgba
+  alpha alpha2
+  name Shuffle5
+  label "\[value in]"
+  xpos 160
+  ypos 1376
+  addUserKnob {20 Utilities}
+  addUserKnob {22 shaffle_plus_channel l "                    shaffle plus channel                    " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.plus_channel()" +STARTLINE}
+  addUserKnob {22 shuffle_all_color l "                   shuffle all color: RED                   " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.all_color(\"red\")" +STARTLINE}
+ }
+ Multiply {
+  channels rgb
+  value 0.001
+  name Multiply3
+  xpos 160
+  ypos 1430
+ }
+push $N9c17850
+ Dot {
+  name Dot18
+  label "\[value \[input \[in] 0].name]"
+  xpos -988
+  ypos -44
+ }
+ Dot {
+  name Dot19
+  label "\[value \[input \[in] 0].name]"
+  xpos -988
+  ypos 1268
+ }
+push $N9c12d90
+ Shuffle {
+  in depth
+  out alpha
+  name PickingEnable
+  label "\[value in]"
+  xpos 8
+  ypos 112
+  addUserKnob {20 Utilities}
+  addUserKnob {22 shaffle_plus_channel l "                    shaffle plus channel                    " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.plus_channel()" +STARTLINE}
+  addUserKnob {22 shuffle_all_color l "                   shuffle all color: RED                   " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.all_color(\"red\")" +STARTLINE}
+ }
+ Dot {
+  name Dot11
+  label "\[value \[input \[in] 0].name]"
+  xpos 42
+  ypos 1156
+ }
+set N9ca39d0 [stack 0]
+ Dot {
+  name Dot3
+  label "\[value \[input \[in] 0].name]"
+  xpos 42
+  ypos 1284
+ }
+push $N9c44930
+ Dot {
+  name Dot10
+  label "\[value \[input \[in] 0].name]"
+  xpos -774
+  ypos 890
+ }
+ Dot {
+  name Dot8
+  label "\[value \[input \[in] 0].name]"
+  xpos -774
+  ypos 1114
+ }
+ Dot {
+  name Dot9
+  label "\[value \[input \[in] 0].name]"
+  xpos -342
+  ypos 1114
+ }
+ Shuffle {
+  red alpha
+  name Shuffle2
+  label "\[value in]"
+  xpos -376
+  ypos 1168
+  addUserKnob {20 Utilities}
+  addUserKnob {22 shaffle_plus_channel l "                    shaffle plus channel                    " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.plus_channel()" +STARTLINE}
+  addUserKnob {22 shuffle_all_color l "                   shuffle all color: RED                   " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.all_color(\"red\")" +STARTLINE}
+ }
+ Multiply {
+  channels {-rgba.red rgba.green rgba.blue none}
+  value 0.01
+  name Multiply2
+  xpos -376
+  ypos 1206
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy2
+  xpos -376
+  ypos 1232
+ }
+ Multiply {
+  inputs 1+1
+  channels rgba
+  value 0
+  invert_mask true
+  name Multiply5
+  xpos -376
+  ypos 1270
+ }
+push $N9ca39d0
+push $N9c4b400
+push $N9c44930
+ Shuffle {
+  alpha red
+  name Shuffle9
+  label "\[value in]"
+  xpos -472
+  ypos 784
+  addUserKnob {20 Utilities}
+  addUserKnob {22 shaffle_plus_channel l "                    shaffle plus channel                    " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.plus_channel()" +STARTLINE}
+  addUserKnob {22 shuffle_all_color l "                   shuffle all color: RED                   " T "import node_function;nf=node_function.ShuffleNodeFunction(\"node\");nf.all_color(\"red\")" +STARTLINE}
+ }
+ Gamma {
+  channels alpha
+  value 0.2
+  name Gamma4
+  xpos -472
+  ypos 832
+ }
+ Blur {
+  size 4
+  quality 5
+  name Blur1
+  xpos -472
+  ypos 880
+ }
+push $N9c12d90
+ Remove {
+  operation keep
+  channels rgba
+  name Remove1
+  xpos -328
+  ypos 118
+ }
+ Crop {
+  box {0 0 {input.width} {input.height}}
+  crop false
+  name Crop1
+  xpos -328
+  ypos 152
+ }
+set N9d1fdb0 [stack 0]
+ Dot {
+  name Dot13
+  label "\[value \[input \[in] 0].name]"
+  xpos -172
+  ypos 148
+ }
+ Dot {
+  name Dot14
+  label "\[value \[input \[in] 0].name]"
+  xpos -172
+  ypos 884
+ }
+push $N9c35790
+ Expression {
+  expr3 1-abs(sin(pi*(x)/width))
+  name Expression3
+  xpos -634
+  ypos 214
+ }
+push $N9c35790
+ Multiply {
+  inputs 1+1
+  channels {rgba.red -rgba.green -rgba.blue none}
+  value 1.25
+  name Multiply6
+  xpos -538
+  ypos 214
+  disable {{1-Astigmatism}}
+ }
+ LensDistortion {
+  serializeKnob ""
+  serialiseKnob "22 serialization::archive 9 0 0 0 0 0 0 0 0 0 0 0 0"
+  distortion1 0.075
+  filter Impulse
+  cardScale {1.088933229 1.088933229 1}
+  a -0.04625016451
+  b -0.02669302933
+  c -0.01010931656
+  name LensDistortion1
+  xpos -456
+  ypos 278
+  disable {{1-Astigmatism}}
+ }
+ Crop {
+  box {0 0 {input.width} {input.height}}
+  crop false
+  name Crop3
+  xpos -456
+  ypos 326
+ }
+push $N9d1fdb0
+ Gamma {
+  channels rgba
+  value 3
+  name Gamma2
+  xpos -312
+  ypos 214
+ }
+ LensDistortion {
+  serializeKnob ""
+  serialiseKnob "22 serialization::archive 9 0 0 0 0 0 0 0 0 0 0 0 0"
+  distortion1 0.075
+  cardScale {1.088933229 1.088933229 1}
+  a -0.04625016451
+  b -0.02669302933
+  c -0.01010931656
+  name LensDistortion3
+  xpos -312
+  ypos 246
+  disable {{1-Astigmatism}}
+ }
+ Dot {
+  name Dot20
+  label "\[value \[input \[in] 0].name]"
+  xpos -284
+  ypos 292
+ }
+ ShuffleCopy {
+  inputs 2
+  red red
+  green green
+  blue blue
+  alpha black
+  out depth
+  name ShuffleCopy3
+  label "\[value in] to \[value out]"
+  xpos -312
+  ypos 384
+ }
+ OCIOColorSpace {
+  in_colorspace linear
+  out_colorspace linear
+  name OCIOColorSpace1
+  xpos -312
+  ypos 467
+ }
+ ZBlur {
+  channels rgba
+  math linear
+  size {{1/Anamorphic} {((1+Anamorphic)/2)}}
+  max_size {{ZZ_DEFOCUS_.max_size}}
+  shape 1
+  name ZBlur2
+  xpos -312
+  ypos 537
+ }
+ OCIOColorSpace {
+  in_colorspace linear
+  out_colorspace linear
+  name OCIOColorSpace2
+  xpos -312
+  ypos 616
+ }
+ LensDistortion {
+  serializeKnob ""
+  serialiseKnob "22 serialization::archive 9 0 0 0 0 0 0 0 0 0 0 0 0"
+  distortion1 {{LensDistortion1.distortion1}}
+  invertDistortion true
+  cardScale {0.9302325249 0.9302325249 1}
+  a 0.00833672937
+  b 0.04452196136
+  c 0.02401318401
+  name LensDistortion2
+  xpos -312
+  ypos 694
+  disable {{1-Astigmatism}}
+ }
+ Gamma {
+  channels rgba
+  value {{1/Gamma2.value}}
+  name Gamma3
+  xpos -312
+  ypos 790
+ }
+ Merge2 {
+  inputs 2+1
+  operation copy
+  output {rgba.red rgba.green rgba.blue -rgba.alpha}
+  invert_mask true
+  name FocusZone
+  xpos -312
+  ypos 886
+ }
+ Defocus {
+  inputs 1+1
+  channels rgba
+  defocus 0
+  quality 5
+  name Defocus1
+  xpos -280
+  ypos 992
+  disable {{1-post2dDefocus}}
+ }
+set N9dad8b0 [stack 0]
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy1
+  xpos -184
+  ypos 1040
+ }
+push $N9dad8b0
+ Switch {
+  inputs 2
+  which {{DepthToAlpha}}
+  name Switch1
+  label "Depth To Alpha"
+  xpos -280
+  ypos 1088
+ }
+ Switch {
+  inputs 2
+  which {{DepthVisualize}}
+  name ViewAreas
+  label "RGB "
+  xpos -280
+  ypos 1328
+ }
+ Switch {
+  inputs 2
+  which {{PreviewDepth}}
+  name ViewDepth
+  label "\[value which]"
+  xpos -280
+  ypos 1424
+ }
+push $N9b42f00
+ Dot {
+  name Dot5
+  label "\[value \[input \[in] 0].name]"
+  xpos 512
+  ypos -1257
+ }
+ Dot {
+  name Dot6
+  label "\[value \[input \[in] 0].name]"
+  xpos 484
+  ypos 1684
+ }
+ Switch {
+  inputs 2
+  which {{1-DisableDefocus}}
+  name disable
+  label "\[value which]"
+  xpos -245
+  ypos 1680
+ }
+ Output {
+  name Output1
+  xpos -245
+  ypos 1837
+ }
+end_group
